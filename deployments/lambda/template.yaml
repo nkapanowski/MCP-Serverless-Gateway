@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: MCP Serverless Gateway - Lambda Deployment
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+
+Resources:
+  MCPGatewayFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: mcp-gateway-lambda
+      CodeUri: ../../
+      Handler: deployments.lambda.handler.handler
+      Description: MCP Gateway Lambda Function
+      Architectures:
+        - x86_64
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+      Tags:
+        Service: mcp-gateway
+        Deployment: lambda
+
+  MCPGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${MCPGatewayFunction}
+      RetentionInDays: 7
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub 'https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/'
+  
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt MCPGatewayFunction.Arn
+  
+  FunctionName:
+    Description: Lambda Function Name
+    Value: !Ref MCPGatewayFunction

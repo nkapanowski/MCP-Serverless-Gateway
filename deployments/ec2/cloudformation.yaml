@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MCP Gateway - EC2 Deployment
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t3.small
+    Description: EC2 instance type
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+  
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: EC2 Key Pair for SSH access
+  
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID for deployment
+  
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Description: Subnet ID for deployment
+
+Resources:
+  MCPGatewaySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: mcp-gateway-sg
+      GroupDescription: Security group for MCP Gateway
+      VpcId: !Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+          Description: MCP Gateway API
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: SSH access
+      Tags:
+        - Key: Name
+          Value: mcp-gateway-sg
+
+  MCPGatewayInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: ami-0c55b159cbfafe1f0  # Ubuntu 22.04 LTS (update for your region)
+      SubnetId: !Ref SubnetId
+      SecurityGroupIds:
+        - !Ref MCPGatewaySecurityGroup
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt-get update
+          apt-get install -y python3-pip python3-venv git
+          
+          # Clone or copy application (customize as needed)
+          mkdir -p /opt/mcp-gateway
+          cd /opt/mcp-gateway
+          
+          # Application setup will be done via setup.sh
+          echo "EC2 instance ready for MCP Gateway deployment"
+      Tags:
+        - Key: Name
+          Value: mcp-gateway-ec2
+        - Key: Service
+          Value: mcp-gateway
+        - Key: Deployment
+          Value: ec2
+
+Outputs:
+  InstanceId:
+    Description: EC2 Instance ID
+    Value: !Ref MCPGatewayInstance
+  
+  PublicIp:
+    Description: Public IP address
+    Value: !GetAtt MCPGatewayInstance.PublicIp
+  
+  ApiUrl:
+    Description: API endpoint URL
+    Value: !Sub 'http://${MCPGatewayInstance.PublicIp}:8000'
