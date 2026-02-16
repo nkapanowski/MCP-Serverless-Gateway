@@ -1,0 +1,18 @@
+# Core dependencies
+pydantic>=2.0.0
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-dotenv>=1.0.0
+
+# AWS dependencies
+boto3>=1.28.0
+mangum>=0.17.0
+
+# Observability
+python-json-logger>=2.0.0
+
+# Testing and comparison
+aiohttp>=3.9.0
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0
