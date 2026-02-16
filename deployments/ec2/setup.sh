@@ -1,9 +1,16 @@
 #!/bin/bash
 # Setup script for EC2 deployment
+# NOTE: This script is designed for Debian/Ubuntu-based systems only
 
 set -e
 
-echo "Setting up MCP Gateway on EC2..."
+echo "Setting up MCP Gateway on EC2 (Ubuntu/Debian)..."
+
+# Check if running on Debian/Ubuntu
+if ! command -v apt-get &> /dev/null; then
+    echo "Error: This script requires a Debian/Ubuntu-based system with apt-get"
+    exit 1
+fi
 
 # Update system
 sudo apt-get update

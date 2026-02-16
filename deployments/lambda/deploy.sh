@@ -5,8 +5,12 @@ set -e
 
 echo "Building Lambda deployment package..."
 
-# Install dependencies
-pip install -r requirements.txt -t ./package/
+# Install dependencies with platform and Python version for Lambda compatibility
+pip install -r requirements.txt \
+    --platform manylinux2014_x86_64 \
+    --python-version 3.11 \
+    --only-binary=:all: \
+    -t ./package/
 
 # Copy source code
 cp -r src ./package/

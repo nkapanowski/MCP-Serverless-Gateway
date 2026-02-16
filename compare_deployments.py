@@ -130,7 +130,7 @@ class DeploymentTester:
             "latency_median_ms": statistics.median(latencies),
             "latency_min_ms": min(latencies),
             "latency_max_ms": max(latencies),
-            "latency_p95_ms": statistics.quantiles(latencies, n=20)[18] if len(latencies) >= 20 else max(latencies),
+            "latency_p95_ms": statistics.quantiles(latencies, n=100)[94] if len(latencies) >= 100 else max(latencies),
             "latency_p99_ms": statistics.quantiles(latencies, n=100)[98] if len(latencies) >= 100 else max(latencies),
             "latency_stddev_ms": statistics.stdev(latencies) if len(latencies) > 1 else 0
         }

@@ -8,14 +8,14 @@ from typing import Dict, Any, List, Optional
 from abc import ABC, abstractmethod
 
 from .schemas import ToolSchema, ToolType, ToolResponse
-from .observability import ObservabilityLogger
+from .observability import get_logger
 
 
 class BaseTool(ABC):
     """Base class for all tools."""
     
     def __init__(self):
-        self.logger = ObservabilityLogger()
+        self.logger = get_logger()
     
     @abstractmethod
     def get_schema(self) -> ToolSchema:

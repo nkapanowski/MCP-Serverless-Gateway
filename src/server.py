@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from .schemas import MCPRequest, MCPResponse, ToolRequest
 from .tools import ToolRegistry
-from .observability import ObservabilityLogger
+from .observability import get_logger
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -19,7 +19,7 @@ app = FastAPI(
 
 # Initialize components
 tool_registry = ToolRegistry()
-logger = ObservabilityLogger()
+logger = get_logger()
 
 
 @app.get("/")

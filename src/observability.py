@@ -9,6 +9,17 @@ from contextlib import contextmanager
 from functools import wraps
 from pythonjsonlogger import jsonlogger
 
+# Module-level singleton logger instance
+_logger_instance = None
+
+
+def get_logger(name: str = "mcp-gateway") -> "ObservabilityLogger":
+    """Get singleton logger instance."""
+    global _logger_instance
+    if _logger_instance is None:
+        _logger_instance = ObservabilityLogger(name)
+    return _logger_instance
+
 
 class ObservabilityLogger:
     """Structured JSON logger for observability."""
@@ -17,13 +28,15 @@ class ObservabilityLogger:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
         
-        # JSON formatter
-        handler = logging.StreamHandler()
-        formatter = jsonlogger.JsonFormatter(
-            '%(timestamp)s %(level)s %(name)s %(message)s %(latency_ms)s %(error)s'
-        )
-        handler.setFormatter(formatter)
-        self.logger.addHandler(handler)
+        # Only add handler if not already present to prevent duplicates
+        if not self.logger.handlers:
+            # JSON formatter
+            handler = logging.StreamHandler()
+            formatter = jsonlogger.JsonFormatter(
+                '%(timestamp)s %(level)s %(name)s %(message)s %(latency_ms)s %(error)s'
+            )
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
     
     def log_request(
         self, 
@@ -89,7 +102,7 @@ def time_operation(operation_name: str = "operation"):
         raise
     finally:
         latency_ms = (time.time() - start_time) * 1000
-        logger = ObservabilityLogger()
+        logger = get_logger()
         logger.log_request(
             action=operation_name,
             latency_ms=latency_ms,
@@ -113,7 +126,7 @@ def log_timing(func):
             raise
         finally:
             latency_ms = (time.time() - start_time) * 1000
-            logger = ObservabilityLogger()
+            logger = get_logger()
             logger.log_request(
                 action=func.__name__,
                 latency_ms=latency_ms,
@@ -134,7 +147,7 @@ def log_timing(func):
             raise
         finally:
             latency_ms = (time.time() - start_time) * 1000
-            logger = ObservabilityLogger()
+            logger = get_logger()
             logger.log_request(
                 action=func.__name__,
                 latency_ms=latency_ms,

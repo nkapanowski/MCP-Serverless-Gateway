@@ -23,6 +23,16 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
     Description: Subnet ID for deployment
 
+Mappings:
+  RegionMap:
+    us-east-1:
+      AMI: ami-0c55b159cbfafe1f0
+    us-west-2:
+      AMI: ami-0d1cd67c26f5fca19
+    eu-west-1:
+      AMI: ami-0aef57767f5404a3c
+    # Add more regions as needed
+
 Resources:
   MCPGatewaySecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -50,7 +60,7 @@ Resources:
     Properties:
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
-      ImageId: ami-0c55b159cbfafe1f0  # Ubuntu 22.04 LTS (update for your region)
+      ImageId: !FindInMap [RegionMap, !Ref "AWS::Region", AMI]
       SubnetId: !Ref SubnetId
       SecurityGroupIds:
         - !Ref MCPGatewaySecurityGroup
