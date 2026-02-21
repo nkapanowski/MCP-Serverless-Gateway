@@ -116,3 +116,52 @@ if __name__ == "__main__":
         mcp.run(transport="streamable-http")
     except KeyboardInterrupt:
         print("MCP Serverless Gateway stopped")
+
+
+# === EC2/Lambda Comparison Framework === STUB REPLACED WITH REAL EC2 CALL, LAMBDA STILL STUBBED
+import requests
+
+def _call_ec2_backend(payload: dict) -> dict:
+    start = _now_ms()
+    try:
+        response = requests.post(
+            "http://3.139.91.10:5000/api",
+            json=payload,
+            timeout=5
+        )
+        response.raise_for_status()
+        data = response.json()
+        return {"backend": "ec2", "result": data, "duration_ms": _now_ms() - start}
+    except Exception as e:
+        return {"backend": "ec2", "error": str(e), "duration_ms": _now_ms() - start}
+
+def _call_lambda_backend(payload: dict) -> dict:
+    start = _now_ms()
+    # TODO: Replace with real Lambda call
+    time.sleep(0.05)
+    return {"backend": "lambda", "result": "stub", "duration_ms": _now_ms() - start}
+
+@mcp.tool()
+def route_backend(payload: dict, backend: str = "ec2", request_id: str | None = None) -> dict:
+
+    # Routes payload to specified backend (ec2 or lambda).
+
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    if backend == "lambda":
+        result = _call_lambda_backend(payload)
+    else:
+        result = _call_ec2_backend(payload)
+    return _success(rid, result, start)
+
+@mcp.tool()
+def compare_backends(payload: dict, request_id: str | None = None) -> dict:
+    
+   # Calls both EC2 and Lambda backends, returns both results and which was faster.
+    
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    ec2_result = _call_ec2_backend(payload)
+    lambda_result = _call_lambda_backend(payload)
+    faster = "ec2" if ec2_result["duration_ms"] < lambda_result["duration_ms"] else "lambda"
+    return _success(rid, {"ec2": ec2_result, "lambda": lambda_result, "faster": faster}, start)
