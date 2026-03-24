@@ -1,151 +1,170 @@
-# server.py
-# MCP Serverless Gateway
-# Exposes "tools" through mcp server that can be called by LLM agents via MCP protocol.
-
-from __future__ import annotations
-
+from mcp.server.fastmcp import FastMCP
+import hashlib
+import re
 import time
 import uuid
+import uvicorn
+import requests
 from typing import Any, Dict
 
-# FastMCP = high level wrapper for MCP protocol
-from mcp.server.fastmcp import FastMCP  
-
-# Creates MCP server instance
-# json_response=True lets the tools return python dicts that are automatically converted to JSON responses
-mcp = FastMCP("MCP Serverless Gateway", json_response=True)
-
-
-# Timing and standardized response helpers
-# Measures tool execution time and formats consistent
-# success and error responses according to schemas.md
+mcp = FastMCP("EC2 MCP Server")
 
 def _now_ms() -> int:
     return int(time.time() * 1000)
 
-
-def _success(request_id: str, data: Dict[str, Any], start_ms: int) -> Dict[str, Any]:
+def _success(request_id: str, result: dict, start: int) -> Dict[str, Any]:
     return {
+        "request_id": request_id,
         "status": "success",
-        "request_id": request_id,
-        "data": data,
-        "execution_time_ms": _now_ms() - start_ms,
+        "result": result,
+        "duration_ms": _now_ms() - start
     }
 
-
-def _error(request_id: str, code: str, message: str, start_ms: int) -> Dict[str, Any]:
+def _error(request_id: str, code: str, message: str, start: int) -> Dict[str, Any]:
     return {
-        "status": "error",
         "request_id": request_id,
-        "error": {"code": code, "message": message},
-        "execution_time_ms": _now_ms() - start_ms,
+        "status": "error",
+        "error": {
+            "code": code,
+            "message": message
+        },
+        "duration_ms": _now_ms() - start
     }
 
-
-# MCP Tools
-
-@mcp.tool() # Registers function as MCP tool that can be called by LLM agents via MCP protocol
-def search(query: str, request_id: str | None = None) -> Dict[str, Any]:
-    """ 
-    Stub Search Tool, validates input and returns placeholder result for now
-    """
+@mcp.tool()
+def add(a: float, b: float, request_id: str | None = None) -> Dict[str, Any]:
+    """Add two numbers together."""
     start = _now_ms()
     rid = request_id or str(uuid.uuid4())
-
-    
-    if not query or not query.strip():
-        return _error(rid, "INVALID_INPUT", "query cannot be empty", start)
-
-    # TODO for Phase 2+: replace stub with real search implementation
-    results = [f"Stub result for: {query.strip()}"]
-    return _success(rid, {"results": results}, start)
-
+    return _success(rid, {"result": a + b}, start)
 
 @mcp.tool()
-def file_read(filename: str, request_id: str | None = None) -> Dict[str, Any]:
-    """
-    File read tool that reads local file with basic checks
-    """
+def hash_this(message: str, request_id: str | None = None) -> Dict[str, Any]:
+    """SHA-256 hash a message."""
     start = _now_ms()
     rid = request_id or str(uuid.uuid4())
-
-    if not filename or not filename.strip():
-        return _error(rid, "INVALID_INPUT", "filename cannot be empty", start)
-
-    try:
-        # Basic security to prevent path separators
-        if "/" in filename or "\\" in filename:
-            return _error(rid, "INVALID_INPUT", "filename must not include path separators", start)
-
-        with open(filename, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        return _success(rid, {"content": content}, start)
-
-    except FileNotFoundError:
-        return _error(rid, "EXECUTION_ERROR", f"file not found: {filename}", start)
-    except Exception as e:
-        return _error(rid, "INTERNAL_ERROR", f"unexpected error: {e}", start)
-
+    if not message or not message.strip():
+        return _error(rid, "INVALID_INPUT", "message cannot be empty", start)
+    hashed = hashlib.sha256(message.encode("utf-8")).hexdigest()
+    return _success(rid, {"result": hashed}, start)
 
 @mcp.tool()
-def db_query(query: str, request_id: str | None = None) -> Dict[str, Any]:
-    """
-    Stub Database Tool, simulates querying structured data
-    """
+def timestamp(request_id: str | None = None) -> Dict[str, Any]:
+    """Return the current Unix timestamp."""
     start = _now_ms()
     rid = request_id or str(uuid.uuid4())
+    return _success(rid, {"result": int(time.time())}, start)
 
-    # Validation check
-    if not query or not query.strip():
-        return _error(rid, "INVALID_INPUT", "SQL query cannot be empty", start)
+@mcp.tool()
+def word_dictionary(sentence: str, request_id: str | None = None) -> Dict[str, Any]:
+    """Count word occurrences in a sentence."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    if not sentence or not sentence.strip():
+        return _error(rid, "INVALID_INPUT", "sentence cannot be empty", start)
+    cleaned = re.sub(r"[^\w\s]", "", sentence.lower())
+    words = cleaned.split()
+    counts = {}
+    for word in words:
+        counts[word] = counts.get(word, 0) + 1
+    return _success(rid, {"result": counts}, start)
 
-    # TODO for Phase 2+: replace with real SQLite or Postgres connection
-    # For now, its returns hard-coded stub
-    mock_data = [
-        {"id": 1, "name": "User_Alpha", "status": "active"},
-        {"id": 2, "name": "User_Beta", "status": "pending"}
-    ]
-    
-    return _success(rid, {"results": mock_data, "query_echo": query.strip()}, start)
+@mcp.tool()
+def sorted_word_dictionary(sentence: str, n: int = 5, request_id: str | None = None) -> Dict[str, Any]:
+    """Return the top-n most frequent words in a sentence."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    if not sentence or not sentence.strip():
+        return _error(rid, "INVALID_INPUT", "sentence cannot be empty", start)
+    cleaned = re.sub(r"[^\w\s]", "", sentence.lower())
+    words = cleaned.split()
+    counts = {}
+    for word in words:
+        counts[word] = counts.get(word, 0) + 1
+    sorted_words = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:n]
+    return _success(rid, {"result": sorted_words}, start)
 
-# Server startup
-# Starts MCP server using Streamable HTTP transport
-if __name__ == "__main__":
-    try:
-        mcp.run(transport="streamable-http")
-    except KeyboardInterrupt:
-        print("MCP Serverless Gateway stopped")
+@mcp.tool()
+def hello(name: str = "Natalie", request_id: str | None = None) -> Dict[str, Any]:
+    """Say hello to someone."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    return _success(rid, {"result": f"Hello there {name}!"}, start)
 
+@mcp.tool()
+def hello_world(name: str = "Natalie", request_id: str | None = None) -> Dict[str, Any]:
+    """Say hello world to someone."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    return _success(rid, {"result": f"Hello World, {name}!"}, start)
 
-# === EC2/Lambda Comparison Framework === STUB REPLACED WITH REAL EC2 CALL, LAMBDA STILL STUBBED
-import requests
+@mcp.tool()
+def goodbye(name: str = "Natalie", request_id: str | None = None) -> Dict[str, Any]:
+    """Say goodbye to someone."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    return _success(rid, {"result": f"Goodbye, {name}!"}, start)
 
 def _call_ec2_backend(payload: dict) -> dict:
     start = _now_ms()
     try:
-        response = requests.post(
-            "http://3.139.91.10:5000/api",
-            json=payload,
-            timeout=5
-        )
-        response.raise_for_status()
-        data = response.json()
-        return {"backend": "ec2", "result": data, "duration_ms": _now_ms() - start}
+        tool_name = payload.get("tool", "timestamp")
+        parameters = payload.get("parameters", {})
+        
+        tool_map = {
+            "add": lambda p: add(**p),
+            "hashThis": lambda p: hash_this(message=p.get("message") or p.get("thing", "")),
+            "hash_this": lambda p: hash_this(message=p.get("message") or p.get("thing", "")),
+            "timestamp": lambda p: timestamp(),
+            "getTimeStampOfService": lambda p: timestamp(),
+            "word_dictionary": lambda p: word_dictionary(**p),
+            "wordDictionary": lambda p: word_dictionary(**p),
+            "sorted_word_dictionary": lambda p: sorted_word_dictionary(**p),
+            "sortedWordDictionary": lambda p: sorted_word_dictionary(**p),
+            "hello": lambda p: hello(**p),
+            "hello_world": lambda p: hello_world(**p),
+            "helloWorld": lambda p: hello_world(**p),
+            "goodbye": lambda p: goodbye(**p),
+        }
+        
+        if tool_name not in tool_map:
+            return {"backend": "ec2", "error": f"Tool '{tool_name}' not found", "duration_ms": _now_ms() - start}
+        
+        result = tool_map[tool_name](parameters)
+        return {"backend": "ec2", "result": result, "duration_ms": _now_ms() - start}
     except Exception as e:
         return {"backend": "ec2", "error": str(e), "duration_ms": _now_ms() - start}
 
 def _call_lambda_backend(payload: dict) -> dict:
     start = _now_ms()
-    # TODO: Replace with real Lambda call
-    time.sleep(0.05)
-    return {"backend": "lambda", "result": "stub", "duration_ms": _now_ms() - start}
+    try:
+        rpc_payload = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {
+                "name": payload.get("tool", "echo"),
+                "arguments": payload.get("parameters", payload)
+            }
+        }
+        response = requests.post(
+            "https://u099e6zzcg.execute-api.us-east-2.amazonaws.com/mcp",
+            json=rpc_payload,
+            timeout=10,
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json, text/event-stream"
+            }
+        )
+        response.raise_for_status()
+        data = response.json()
+        return {"backend": "lambda", "result": data, "duration_ms": _now_ms() - start}
+    except Exception as e:
+        return {"backend": "lambda", "error": str(e), "duration_ms": _now_ms() - start}
 
 @mcp.tool()
 def route_backend(payload: dict, backend: str = "ec2", request_id: str | None = None) -> dict:
-
-    # Routes payload to specified backend (ec2 or lambda).
-
+    """Route a payload to either the EC2 or Lambda backend."""
     start = _now_ms()
     rid = request_id or str(uuid.uuid4())
     if backend == "lambda":
@@ -156,12 +175,14 @@ def route_backend(payload: dict, backend: str = "ec2", request_id: str | None = 
 
 @mcp.tool()
 def compare_backends(payload: dict, request_id: str | None = None) -> dict:
-    
-   # Calls both EC2 and Lambda backends, returns both results and which was faster.
-    
+    """Call both EC2 and Lambda backends and return which was faster."""
     start = _now_ms()
     rid = request_id or str(uuid.uuid4())
     ec2_result = _call_ec2_backend(payload)
     lambda_result = _call_lambda_backend(payload)
     faster = "ec2" if ec2_result["duration_ms"] < lambda_result["duration_ms"] else "lambda"
     return _success(rid, {"ec2": ec2_result, "lambda": lambda_result, "faster": faster}, start)
+
+if __name__ == "__main__":
+    app = mcp.streamable_http_app()
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
