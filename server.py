@@ -5,6 +5,8 @@ import time
 import uuid
 import uvicorn
 import requests
+import json
+import urllib.request
 from typing import Any, Dict
 
 mcp = FastMCP("EC2 MCP Server")
@@ -30,7 +32,184 @@ def _error(request_id: str, code: str, message: str, start: int) -> Dict[str, An
         },
         "duration_ms": _now_ms() - start
     }
+def _get_fruit_info(fruit: str) -> dict:
+    fruit_name = fruit.strip().lower()
+    if not fruit_name:
+        return {"error": "No fruit specified"}
 
+    url = f"https://www.fruityvice.com/api/fruit/{fruit_name}"
+
+    try:
+        with urllib.request.urlopen(url, timeout=3) as response:
+            data = json.loads(response.read().decode())
+            calories = data['nutritions']['calories']
+            sugar = data['nutritions']['sugar']
+
+            return {
+                "fruit": fruit_name,
+                "calories": calories,
+                "sugar": sugar,
+                "sum_rounded": round(calories + sugar)
+            }
+    except Exception as e:
+        return {"error": str(e)}
+def _get_price_internal(pair: str):
+    pair = pair.strip().upper()
+    if not pair:
+        return {"error": "No trading pair specified"}
+
+    url = f"https://www.okx.com/api/v5/market/ticker?instId={pair}"
+
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json"
+            }
+        )
+
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode())
+
+            price_str = data["data"][0]["last"]
+            price = float(price_str)
+
+            result = price + 0
+            rounded = round(result, 2)
+
+            return {
+                "pair": pair,
+                "price": price,
+                "result": result,
+                "rounded": rounded
+            }
+
+    except Exception as e:
+        return {"error": str(e)}
+# minimal city → coordinates mapping
+CITY_COORDS = {
+    "london": {"lat": 51.5074, "lon": -0.1278},
+    "new york": {"lat": 40.7128, "lon": -74.0060},
+    "san francisco": {"lat": 37.7749, "lon": -122.4194}
+}
+
+def _get_weather_internal(args: dict) -> dict:
+    """
+    Internal function to fetch weather for a city.
+    Converts Celsius → Kelvin and rounds to 2 decimals.
+    """
+    city = args.get("city", "").strip().lower()
+    if not city:
+        raise ValueError("No city specified")
+
+    if city not in CITY_COORDS:
+        raise ValueError(f"Unsupported city: {city}")
+
+    lat = CITY_COORDS[city]["lat"]
+    lon = CITY_COORDS[city]["lon"]
+
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true"
+
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode())
+
+        temp_c = data["current_weather"]["temperature"]
+        temp_k = round(temp_c + 273.15, 2)
+
+        return {
+            "city": city,
+            "temp_c": temp_c,
+            "temp_k": temp_k
+        }
+
+    except KeyError as e:
+        raise ValueError(f"Missing field in API response: {e}")
+    except Exception as e:
+        raise RuntimeError(str(e))
+
+def _list_departments_internal() -> dict:
+    """Fetch first two Met Museum departments and compute sum."""
+    url = "https://collectionapi.metmuseum.org/public/collection/v1/departments"
+    try:
+        req = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": "Mozilla/5.0",
+                "Accept": "application/json"
+            }
+        )
+        with urllib.request.urlopen(req, timeout=3) as response:
+            data = json.loads(response.read().decode())
+            departments = data["departments"]
+            if len(departments) < 2:
+                return {"error": "Not enough departments returned"}
+
+            dept_id_1 = departments[0]["departmentId"]
+            dept_id_2 = departments[1]["departmentId"]
+            total = dept_id_1 + dept_id_2
+            rounded = round(total)
+
+            return {
+                "dept_id_1": dept_id_1,
+                "dept_id_2": dept_id_2,
+                "sum": total,
+                "rounded": rounded
+            }
+    except KeyError as e:
+        return {"error": f"Missing field in API response: {e}"}
+    except Exception as e:
+        return {"error": str(e)}
+@mcp.tool()
+def get_fruit_info(fruit: str, request_id: str | None = None) -> Dict[str, Any]:
+    """Get nutrition info for a fruit."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+
+    result = _get_fruit_info(fruit)
+
+    if "error" in result:
+        return _error(rid, "FRUIT_ERROR", result["error"], start)
+
+    return _success(rid, result, start)
+@mcp.tool()
+def get_price(pair: str, request_id: str | None = None):
+    """Get current price for a trading pair from OKX."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+
+    try:
+        result = _get_price_internal(pair)
+        return _success(rid, {"result": result}, start)
+    except Exception as e:
+        return _error(rid, "PRICE_ERROR", str(e), start)
+@mcp.tool()
+def get_weather(city: str, request_id: str | None = None) -> dict:
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    try:
+        result = _get_weather_internal({"city": city})
+        return _success(rid, {"result": result}, start)
+    except Exception as e:
+        return _error(rid, "WEATHER_ERROR", str(e), start)
+@mcp.tool()
+def list_departments(request_id: str | None = None) -> dict:
+    """Fetch Met Museum departments and return sum of first two department IDs."""
+    start = _now_ms()
+    rid = request_id or str(uuid.uuid4())
+    try:
+        result = _list_departments_internal()
+        return _success(rid, {"result": result}, start)
+    except Exception as e:
+        return _error(rid, "INTERNAL_ERROR", str(e), start)
 @mcp.tool()
 def add(a: float, b: float, request_id: str | None = None) -> Dict[str, Any]:
     """Add two numbers together."""
@@ -125,6 +304,10 @@ def _call_ec2_backend(payload: dict) -> dict:
             "hello_world": lambda p: hello_world(**p),
             "helloWorld": lambda p: hello_world(**p),
             "goodbye": lambda p: goodbye(**p),
+            "get_fruit_info": lambda p: get_fruit_info(**p),
+            "get_price": lambda p: get_price(**p),
+            "get_weather": lambda p: get_weather(**p),
+            "list_departments": lambda p: list_departments(**p)
         }
         
         if tool_name not in tool_map:
