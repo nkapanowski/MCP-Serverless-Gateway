@@ -1,0 +1,425 @@
+PS C:\Users\nkapa> $init = Invoke-WebRequest -Uri "https://d2plqe3qtelgql.cloudfront.net/mcp" -Method POST -Headers @{"Accept"="application/json, text/event-stream";"Content-Type"="application/json"} -Body '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"0.1"}}}' -UseBasicParsing; $sid = $init.Headers["mcp-session-id"]; foreach ($tool in @("h1_ec2","h2_ec2","h3_ec2","h4_ec2","h6_ec2","h7_ec2","h8_ec2","h9_ec2","h10_ec2")) { Write-Host "`n=== $tool ===" -ForegroundColor Cyan; $r = Invoke-WebRequest -Uri "https://d2plqe3qtelgql.cloudfront.net/mcp" -Method POST -Headers @{"Accept"="application/json, text/event-stream";"Content-Type"="application/json";"mcp-session-id"=$sid} -Body "{`"jsonrpc`":`"2.0`",`"id`":2,`"method`":`"tools/call`",`"params`":{`"name`":`"$tool`",`"arguments`":{}}}" -UseBasicParsing; ([regex]::Match($r.Content,'data: (.+)').Groups[1].Value | ConvertFrom-Json).result.structuredContent | ConvertTo-Json -Depth 20 }
+
+=== h1_ec2 ===
+{
+    "request_id":  "fd4a7467-8a60-4a09-bf24-e0d365eddb88",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H1",
+                   "backend":  "ec2",
+                   "paper_id":  "2508.14704v1",
+                   "pdf_size_kb":  1842.19,
+                   "num_pages":  31,
+                   "stats":  {
+                                 "mean":  748.1935483870968,
+                                 "median":  686,
+                                 "sum":  23194,
+                                 "min":  115,
+                                 "max":  1512
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "search_arxiv",
+                                         "duration_ms":  121,
+                                         "found":  10
+                                     },
+                                     {
+                                         "step":  "download_arxiv",
+                                         "duration_ms":  103,
+                                         "size_kb":  1842.19
+                                     },
+                                     {
+                                         "step":  "read_arxiv_paper",
+                                         "duration_ms":  1140,
+                                         "pages":  31
+                                     }
+                                 ],
+                   "total_duration_ms":  1364
+               },
+    "duration_ms":  1367
+}
+
+=== h2_ec2 ===
+{
+    "request_id":  "24cea689-1b83-4f5a-af5d-450227b42c90",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H2",
+                   "backend":  "ec2",
+                   "nct_id":  "NCT02313012",
+                   "trials_searched":  5,
+                   "stats":  {
+                                 "mean_enrollment":  223.8,
+                                 "sum_enrollment":  1119,
+                                 "median_enrollment":  19
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "trial_searcher",
+                                         "duration_ms":  119,
+                                         "found":  5
+                                     },
+                                     {
+                                         "step":  "trial_getter",
+                                         "duration_ms":  104
+                                     },
+                                     {
+                                         "step":  "trial_references",
+                                         "duration_ms":  119
+                                     },
+                                     {
+                                         "step":  "trial_locations",
+                                         "duration_ms":  109
+                                     },
+                                     {
+                                         "step":  "trial_outcomes",
+                                         "duration_ms":  113
+                                     }
+                                 ],
+                   "total_duration_ms":  564
+               },
+    "duration_ms":  566
+}
+
+=== h3_ec2 ===
+{
+    "request_id":  "b0c03048-724f-45e9-b6ea-8a3366eea247",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H3",
+                   "backend":  "ec2",
+                   "feed_count":  86,
+                   "stats":  {
+                                 "diameter_mean":  76.34259568376744,
+                                 "diameter_median":  31.847653721024997,
+                                 "diameter_sum":  6565.463228804,
+                                 "diameter_min":  3.79789205455,
+                                 "diameter_max":  644.9746074367499,
+                                 "miss_distance_sum":  2920355059.301066,
+                                 "hazardous_mode":  "False",
+                                 "records_processed":  86
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "get_asteroids_feed",
+                                         "duration_ms":  517,
+                                         "neos_found":  86
+                                     },
+                                     {
+                                         "step":  "browse_asteroids",
+                                         "duration_ms":  641,
+                                         "catalog_size":  20
+                                     },
+                                     {
+                                         "step":  "get_asteroid_lookup",
+                                         "duration_ms":  371
+                                     }
+                                 ],
+                   "total_duration_ms":  1529
+               },
+    "duration_ms":  1533
+}
+
+=== h4_ec2 ===
+{
+    "request_id":  "560014b3-b8c8-41de-b868-9117eadc4846",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H4",
+                   "backend":  "ec2",
+                   "gene":  "BRAF",
+                   "top_pmid":  "41926359",
+                   "article_title":  "Endometrioid Versus Seromucinous Borderline Ovarian Tumors: Divergent Molecular Signatures and a Shared Role as Precursors to Endometrioid Carcinoma.",
+                   "arxiv_papers_found":  5,
+                   "pdf_size_kb":  639.49,
+                   "num_pages":  62,
+                   "citation_stats":  {
+                                          "citation_mean":  12.6,
+                                          "citation_sum":  63,
+                                          "citation_median":  0
+                                      },
+                   "word_count_stats":  {
+                                            "word_mean":  567.2741935483871,
+                                            "word_median":  568.5,
+                                            "word_sum":  35171,
+                                            "word_min":  143,
+                                            "word_max":  792
+                                        },
+                   "chain_log":  [
+                                     {
+                                         "step":  "article_searcher",
+                                         "duration_ms":  125,
+                                         "pmids_found":  5
+                                     },
+                                     {
+                                         "step":  "article_getter",
+                                         "duration_ms":  133,
+                                         "pmid":  "41926359"
+                                     },
+                                     {
+                                         "step":  "search_arxiv",
+                                         "duration_ms":  68,
+                                         "arxiv_found":  5
+                                     },
+                                     {
+                                         "step":  "download_arxiv",
+                                         "duration_ms":  37,
+                                         "size_kb":  639.49
+                                     },
+                                     {
+                                         "step":  "read_arxiv_paper",
+                                         "duration_ms":  3447,
+                                         "pages":  62
+                                     }
+                                 ],
+                   "total_duration_ms":  4630
+               },
+    "duration_ms":  4637
+}
+
+=== h6_ec2 ===
+{
+    "request_id":  "a16b3dab-6947-40e0-b208-56f98834a10c",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H6",
+                   "backend":  "ec2",
+                   "network":  "ethereum",
+                   "top_pool":  "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
+                   "stats":  {
+                                 "price_mean":  1.0001263367130897,
+                                 "price_median":  1.0001342728696998,
+                                 "price_sum":  168.021224567799,
+                                 "price_min":  0.995234235468453,
+                                 "price_max":  1.0020830850322868,
+                                 "volume_sum":  1073558932.0,
+                                 "candles_processed":  168
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "getNetworks",
+                                         "duration_ms":  274
+                                     },
+                                     {
+                                         "step":  "getNetworkDexes",
+                                         "duration_ms":  643
+                                     },
+                                     {
+                                         "step":  "getNetworkPools",
+                                         "duration_ms":  650
+                                     },
+                                     {
+                                         "step":  "getPoolDetails",
+                                         "duration_ms":  394
+                                     },
+                                     {
+                                         "step":  "getPoolOHLCV",
+                                         "duration_ms":  307,
+                                         "candles":  168
+                                     }
+                                 ],
+                   "total_duration_ms":  2269
+               },
+    "duration_ms":  2272
+}
+
+=== h7_ec2 ===
+{
+    "request_id":  "093f9d37-05eb-4427-b011-617f0b1f7f77",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H7",
+                   "backend":  "ec2",
+                   "package":  "python",
+                   "search_results":  50,
+                   "versions_found":  20,
+                   "stats":  {
+                                 "mean":  92.32,
+                                 "median":  90.5,
+                                 "sum":  20310,
+                                 "min":  1,
+                                 "max":  200,
+                                 "records":  220
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "nixos_search",
+                                         "duration_ms":  1688,
+                                         "results":  50
+                                     },
+                                     {
+                                         "step":  "nixos_info",
+                                         "duration_ms":  399,
+                                         "nix_entries":  0
+                                     },
+                                     {
+                                         "step":  "nixhub_package_versions",
+                                         "duration_ms":  108,
+                                         "versions":  20
+                                     },
+                                     {
+                                         "step":  "nixhub_find_version",
+                                         "duration_ms":  71,
+                                         "found":  false
+                                     },
+                                     {
+                                         "step":  "nixos_flakes_search",
+                                         "duration_ms":  1293,
+                                         "flakes":  200
+                                     }
+                                 ],
+                   "total_duration_ms":  3560
+               },
+    "duration_ms":  3566
+}
+
+=== h8_ec2 ===
+{
+    "request_id":  "9d29dfcf-f047-433f-a2ae-e069d756c685",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H8",
+                   "backend":  "ec2",
+                   "source":  "Hacker News",
+                   "stories_fetched":  25,
+                   "stats":  {
+                                 "score_mean":  26.52,
+                                 "score_median":  0,
+                                 "score_sum":  1671,
+                                 "type_mode":  "comment",
+                                 "score_min":  0,
+                                 "score_max":  1109
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "fetch_top_stories",
+                                         "duration_ms":  187,
+                                         "stories":  25
+                                     },
+                                     {
+                                         "step":  "fetch_story_1",
+                                         "duration_ms":  1678,
+                                         "story_id":  47616361
+                                     },
+                                     {
+                                         "step":  "fetch_story_2",
+                                         "duration_ms":  1645,
+                                         "story_id":  47616242
+                                     },
+                                     {
+                                         "step":  "fetch_story_3",
+                                         "duration_ms":  1716,
+                                         "story_id":  47618189
+                                     }
+                                 ],
+                   "total_duration_ms":  5226
+               },
+    "duration_ms":  5231
+}
+
+=== h9_ec2 ===
+{
+    "request_id":  "b685bcf5-cf99-4eda-81bf-6923f48b02c4",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H9",
+                   "backend":  "ec2",
+                   "query":  "serverless cloud",
+                   "databases_searched":  3,
+                   "pubmed_results":  5,
+                   "biorxiv_results":  0,
+                   "arxiv_results":  5,
+                   "pdf_size_kb":  1267.38,
+                   "word_count_stats":  {
+                                            "mean":  966.4,
+                                            "median":  933,
+                                            "sum":  4832,
+                                            "min":  857,
+                                            "max":  1190,
+                                            "pages":  5
+                                        },
+                   "chain_log":  [
+                                     {
+                                         "step":  "search_pubmed",
+                                         "duration_ms":  185,
+                                         "results":  5
+                                     },
+                                     {
+                                         "step":  "search_biorxiv",
+                                         "duration_ms":  20090,
+                                         "results":  0
+                                     },
+                                     {
+                                         "step":  "search_arxiv",
+                                         "duration_ms":  75,
+                                         "results":  5
+                                     },
+                                     {
+                                         "step":  "download_arxiv",
+                                         "duration_ms":  46,
+                                         "size_kb":  1267.38
+                                     },
+                                     {
+                                         "step":  "read_arxiv_paper",
+                                         "duration_ms":  240,
+                                         "pages":  5
+                                     }
+                                 ],
+                   "total_duration_ms":  20636
+               },
+    "duration_ms":  20641
+}
+
+=== h10_ec2 ===
+{
+    "request_id":  "7be21b09-3355-4435-b80e-33ad4c5b8343",
+    "status":  "success",
+    "result":  {
+                   "chain":  "H10",
+                   "backend":  "ec2",
+                   "chemical":  "python bioinformatics",
+                   "nix_package":  "biopython",
+                   "top_pmid":  "41926704",
+                   "article_title":  "NUPACK: Computational Nucleic Acid Analysis and Design.",
+                   "nix_results":  1,
+                   "versions_found":  5,
+                   "stats":  {
+                                 "download_mean":  3,
+                                 "download_median":  3,
+                                 "download_sum":  15,
+                                 "category_mode":  "unknown",
+                                 "download_min":  1,
+                                 "download_max":  5,
+                                 "records":  5
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "article_searcher",
+                                         "duration_ms":  145,
+                                         "pmids":  10
+                                     },
+                                     {
+                                         "step":  "article_getter",
+                                         "duration_ms":  133,
+                                         "pmid":  "41926704"
+                                     },
+                                     {
+                                         "step":  "nixos_search",
+                                         "duration_ms":  388,
+                                         "results":  1
+                                     },
+                                     {
+                                         "step":  "nixos_info",
+                                         "duration_ms":  355,
+                                         "versions":  0
+                                     },
+                                     {
+                                         "step":  "nixhub_package_versions",
+                                         "duration_ms":  93,
+                                         "versions":  5
+                                     }
+                                 ],
+                   "total_duration_ms":  1114
+               },
+    "duration_ms":  1119
+}

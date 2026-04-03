@@ -1,0 +1,57 @@
+high tier integration check
+
+EC2 High Workload MCP — Unified Technical Brief
+
+1. Status Paragraph
+
+All nine tools executed successfully with no failures. Execution times: 
+h1_ec2 — 1,383 ms; 
+h2_ec2 — 564 ms; 
+h3_ec2 — 1,748 ms; 
+h4_ec2 — 4,478 ms; 
+h6_ec2 — 2,086 ms; 
+h7_ec2 — 3,470 ms; 
+h8_ec2 — 5,438 ms; 
+h9_ec2 — 20,559 ms (dominated by a 20,072 ms bioRxiv step); 
+h10_ec2 — 1,132 ms. 
+The slowest chain was h9_ec2 due to bioRxiv latency; the fastest was h2_ec2 at 564 ms. H5 was not called per specification.
+
+2. Results Table
+
+ToolSourceKey ResultStat UsedValueStatus
+h1_ec2arXivPaper 2508.14704v1, 31 pages, 1,842.19 KB PDFstats.mean char count/page748.19✅ Success
+h1_ec2arXiv10 papers foundstats.sum char count23,194✅ Success
+
+h2_ec2ClinicalTrialsLead trial NCT02313012 (BRAF melanoma), 5 trialsstats.mean_enrollment223.8✅ Success
+h2_ec2ClinicalTrials5 trials searched, 5 chained GETsstats.sum_enrollment1,119✅ Success
+
+h3_ec2NASA NeoWs86 NEOs processed, hazardous mode: Falsestats.diameter_mean (m)76.34✅ Success
+h3_ec2NASA NeoWsDiameter range: 3.80 m – 644.97 mstats.miss_distance_sum (km)2,920,355,059.30✅ Success
+
+h4_ec2PubMed + arXivGene BRAF; top PMID 41926359; 62-page PDF (639.49 KB)citation_stats.citation_mean12.6✅ Success
+h4_ec2PubMed + arXiv5 PubMed + 5 arXiv resultsword_count_stats.word_mean567.27✅ Success
+
+h6_ec2Ethereum DEX (Uniswap v3)Pool 0x88e6...5640, 168 candles (7 days)stats.price_mean (USD)1.00012✅ Success
+h6_ec2Ethereum DEXTop Ethereum pool OHLCVstats.volume_sum (USD)1,073,756,901.00✅ Success
+
+h7_ec2NixOS + nixhubPackage: python; 50 search results; 20 versions; 200 flakesstats.mean (flake score)92.32✅ Success
+h7_ec2NixOS + nixhub220 total recordsstats.sum20,310✅ Success
+
+h8_ec2Hacker News25 top stories fetched; type mode: commentstats.score_mean26.79✅ Success
+h8_ec2Hacker NewsScore range: 0 – 1,117stats.score_sum1,688✅ Success
+
+h9_ec2PubMed + bioRxiv + arXivQuery: "serverless cloud"; 5 PubMed + 0 bioRxiv + 5 arXiv; 1,267.38 KB PDFword_count_stats.mean words/page966.4✅ Success
+h9_ec2PubMed + bioRxiv + arXiv3 databases searchedword_count_stats.sum words4,832✅ Success
+
+h10_ec2BioMCP + NixOSChemical: python bioinformatics; pkg: biopython; PMID 41926704; "NUPACK: Computational Nucleic Acid Analysis and Design."stats.download_mean3✅ Succes
+sh10_ec2BioMCP + NixOS5 nixhub versions found; 1 NixOS resultstats.download_sum15✅ Success
+
+3. Derived Result: Combined Open-Source + Community Signal Volume
+
+This metric combines the total scored records from the NixOS/nixhub chain (h7) and the total Hacker News score mass (h8) to produce a unified community activity index across two distinct open-source data streams.
+FieldToolExact Returned Valueh7_ec2.result.stats.sumNixOS flake records scored20,310h8_ec2.result.stats.score_sumHacker News total score1,688
+Operation: 20,310 + 1,688 = 21,998
+Combined Community Signal Index = 21,998 units
+
+This shows that the NixOS/flake ecosystem contributes ~92.3% of the aggregate community signal volume (20,310 / 21,998 = 92.33%), while the sampled Hacker News top-story window contributes ~7.7% (1,688 / 21,998 = 7.67%). 
+The high NixOS dominance reflects the large flake corpus (200 flakes × mean score 92.32) relative to the narrow 25-story HN sample with score mean of only 26.79.
