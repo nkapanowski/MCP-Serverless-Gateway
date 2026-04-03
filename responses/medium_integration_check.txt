@@ -1,0 +1,32 @@
+medium-tier integration check
+
+EC2 Medium Workload — Technical Brief
+1. Status
+All ten tools executed successfully against the EC2 Medium Workload MCP endpoint. Durations (total duration_ms per tool): 
+
+m1 447 ms · m2 935 ms · m3 1,231 ms · m4 115 ms · m5 536 ms · m6 1,175 ms · m7 453 ms · m8 445 ms · m9 1,421 ms · m10 611 ms. Fastest: m4 (Hugging Face, 115 ms). Slowest: m9 (Repology/nixhub, 1,421 ms).
+
+2. Results Table
+ToolSourceKey ResultStat UsedValueStatus
+✅m1_ec2Open-Meteo — New York 7-day forecastDaily max range: 7.9–22.3 °CMean daily max (°C)14.29
+✅m2_ec2NPS — 15 CA parks; detail: Alcatraz Island15 parks foundMean latitude36.2033
+✅m3_ec2Hacker News top-10 (Reddit blocked on AWS)Top story: Google releases Gemma 4 open modelsMean HN score261.3
+✅m4_ec2Hugging Face — top-20 text-classification modelsTop model: cross-encoder/ms-marco-MiniLM-L6-v2 (15,268,663 dl)Mean downloads2,589,767.4
+✅m5_ec2Met Museum — impressionism search (197 results)First object: Garden at Sainte-Adresse (1867)Mean object ID463,746.7
+✅m6_ec2FIPE Brazilian auto API106 car brands · 583 FIAT models · 100 moto brandsMean FIAT model code4,610.64
+✅m7_ec2OKX — BTC-USDT 48h candles + ETH tickerETH/USDT: $2,060.14BTC close mean (USD)67,617.09
+✅m8_ec2Steam Store (Game Trends API decommissioned)10 top sellers + 10 featured (20 priced)Mean price (USD)23.55
+✅m9_ec2Repology + nixhub — nodejs package9 search results · 43 nix entries · 43 version entriesMean version count22
+✅m10_ec2Wikipedia — "Distributed computing"23 sections · 58,373 charsMean section length (chars)31.57✅
+
+3. Derived Result — BTC Mean Close Price in Steam Game Units
+Question: How many average-priced Steam games could be purchased for the value of 1 BTC (at 48-hour mean close)?
+Fields used:
+
+m7_ec2.result.stats.close_mean = 67,617.09 USD
+m8_ec2.result.stats.mean_price_usd = 23.55 USD
+
+Operation:
+67,617.09 ÷ 23.55 = 2,871.17
+Result: At the 48-hour BTC mean close of $67,617.09, one bitcoin equates to approximately 2,871 Steam games at the mean sampled price of $23.55 — a useful cross-domain ratio illustrating relative asset 
+magnitude between crypto spot markets and consumer software pricing.

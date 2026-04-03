@@ -1,0 +1,418 @@
+PS C:\Users\nkapa\Downloads> $CF="https://dtqsijgqm5u39.cloudfront.net/mcp"; $h=@{"Accept"="application/json, text/event-stream";"Content-Type"="application/json"}; $init=Invoke-WebRequest -Uri $CF -Method POST -Headers $h -Body '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"ps","version":"0.1"}}}' -UseBasicParsing; $h["mcp-session-id"]=$init.Headers["mcp-session-id"]; foreach($tool in @("m1_ec2","m2_ec2","m3_ec2","m4_ec2","m5_ec2","m6_ec2","m7_ec2","m8_ec2","m9_ec2","m10_ec2")){$r=Invoke-WebRequest -Uri $CF -Method POST -Headers $h -Body "{`"jsonrpc`":`"2.0`",`"id`":2,`"method`":`"tools/call`",`"params`":{`"name`":`"$tool`",`"arguments`":{}}}" -UseBasicParsing; Write-Host "=== $tool ==="; ([regex]::Match($r.Content,'data: (.+)').Groups[1].Value | ConvertFrom-Json).result.structuredContent | ConvertTo-Json -Depth 20; Write-Host ""}
+=== m1_ec2 ===
+{
+    "request_id":  "0de31f4b-1f7b-4d4d-854b-e4d83ecbebb0",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M1",
+                   "city":  "New York",
+                   "dates":  [
+                                 "2026-03-27",
+                                 "2026-03-28",
+                                 "2026-03-29",
+                                 "2026-03-30",
+                                 "2026-03-31",
+                                 "2026-04-01",
+                                 "2026-04-02"
+                             ],
+                   "daily_max_c":  [
+                                       18.8,
+                                       5.0,
+                                       11.4,
+                                       11.5,
+                                       21.7,
+                                       23.2,
+                                       11.6
+                                   ],
+                   "stats":  {
+                                 "mean":  14.74,
+                                 "median":  11.6,
+                                 "min":  5.0,
+                                 "max":  23.2
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "get_weather_forecast",
+                                         "duration_ms":  445,
+                                         "days":  7
+                                     }
+                                 ]
+               },
+    "duration_ms":  445
+}
+
+=== m2_ec2 ===
+{
+    "request_id":  "8e0b87c9-4e25-49c6-a06b-2801e0d9c164",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M2",
+                   "park_count":  15,
+                   "detail_park":  "Alcatraz Island",
+                   "latitudes":  [
+                                     37.82676234,
+                                     32.2768237589,
+                                     32.6722503,
+                                     42.3999643979,
+                                     35.29156348,
+                                     33.98680093,
+                                     35.22729389,
+                                     36.48753731,
+                                     37.6152564,
+                                     37.82604456,
+                                     37.80837439,
+                                     37.85982543,
+                                     37.9828422,
+                                     33.91418525,
+                                     33.8743390994
+                                 ],
+                   "stats":  {
+                                 "mean":  36.2033,
+                                 "median":  36.48753731,
+                                 "sum":  543.0499
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "findParks",
+                                         "duration_ms":  388,
+                                         "found":  15
+                                     },
+                                     {
+                                         "step":  "getParkDetails",
+                                         "duration_ms":  395,
+                                         "parkCode":  "alca"
+                                     }
+                                 ]
+               },
+    "duration_ms":  783
+}
+
+=== m3_ec2 ===
+{
+    "request_id":  "d1d32f16-d40f-42c0-a9ca-9baf9b704a52",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M3",
+                   "source":  "Hacker News (Reddit blocked on AWS)",
+                   "story_count":  10,
+                   "top_story_title":  "Make macOS consistently bad (unironically)",
+                   "scores":  [
+                                  214,
+                                  469,
+                                  331,
+                                  42,
+                                  52,
+                                  64,
+                                  69,
+                                  49,
+                                  60,
+                                  171
+                              ],
+                   "stats":  {
+                                 "mean":  152.1,
+                                 "median":  66.5,
+                                 "mode":  214
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "fetch_top_stories",
+                                         "duration_ms":  82,
+                                         "stories":  10
+                                     },
+                                     {
+                                         "step":  "fetch_story_1",
+                                         "duration_ms":  75,
+                                         "story_id":  47547009,
+                                         "score":  214
+                                     },
+                                     {
+                                         "step":  "fetch_story_2",
+                                         "duration_ms":  76,
+                                         "story_id":  47548243,
+                                         "score":  469
+                                     },
+                                     {
+                                         "step":  "fetch_story_3",
+                                         "duration_ms":  79,
+                                         "story_id":  47543139,
+                                         "score":  331
+                                     },
+                                     {
+                                         "step":  "fetch_story_4",
+                                         "duration_ms":  78,
+                                         "story_id":  47548013,
+                                         "score":  42
+                                     },
+                                     {
+                                         "step":  "fetch_story_5",
+                                         "duration_ms":  71,
+                                         "story_id":  47547508,
+                                         "score":  52
+                                     },
+                                     {
+                                         "step":  "fetch_story_6",
+                                         "duration_ms":  81,
+                                         "story_id":  47540388,
+                                         "score":  64
+                                     },
+                                     {
+                                         "step":  "fetch_story_7",
+                                         "duration_ms":  191,
+                                         "story_id":  47498571,
+                                         "score":  69
+                                     },
+                                     {
+                                         "step":  "fetch_story_8",
+                                         "duration_ms":  78,
+                                         "story_id":  47548670,
+                                         "score":  49
+                                     },
+                                     {
+                                         "step":  "fetch_story_9",
+                                         "duration_ms":  78,
+                                         "story_id":  47495245,
+                                         "score":  60
+                                     },
+                                     {
+                                         "step":  "fetch_story_10",
+                                         "duration_ms":  81,
+                                         "story_id":  47542644,
+                                         "score":  171
+                                     }
+                                 ]
+               },
+    "duration_ms":  970
+}
+
+=== m4_ec2 ===
+{
+    "request_id":  "0656d1e4-e99d-4504-8ddf-60ec28f5b165",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M4",
+                   "model_count":  20,
+                   "top_model":  "cross-encoder/ms-marco-MiniLM-L6-v2",
+                   "top_model_downloads":  14576052,
+                   "stats":  {
+                                 "mean":  2559523.9,
+                                 "median":  1243541.0,
+                                 "sum":  51190478
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "search_models",
+                                         "duration_ms":  53,
+                                         "found":  20
+                                     },
+                                     {
+                                         "step":  "get_model_info",
+                                         "duration_ms":  41,
+                                         "modelId":  "cross-encoder/ms-marco-MiniLM-L6-v2"
+                                     }
+                                 ]
+               },
+    "duration_ms":  94
+}
+
+=== m5_ec2 ===
+{
+    "request_id":  "afd3676e-f2bd-4e1d-8907-5133fd6ff9c4",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M5",
+                   "total_results":  197,
+                   "sampled_count":  20,
+                   "first_object_title":  "Garden at Sainte-Adresse",
+                   "first_object_date":  "1867",
+                   "stats":  {
+                                 "mean":  463746.7,
+                                 "median":  437705.0,
+                                 "sum":  9274934
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "search_museum_objects",
+                                         "duration_ms":  112,
+                                         "total_results":  197,
+                                         "sampled":  20
+                                     },
+                                     {
+                                         "step":  "get_museum_object",
+                                         "duration_ms":  310,
+                                         "objectID":  437133
+                                     }
+                                 ]
+               },
+    "duration_ms":  422
+}
+
+=== m6_ec2 ===
+{
+    "request_id":  "fda29f8a-c20c-4455-b075-4aaf968b46af",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M6",
+                   "car_brand_count":  106,
+                   "fiat_brand_code":  "21",
+                   "fiat_model_count":  583,
+                   "moto_brand_count":  100,
+                   "stats":  {
+                                 "mean_model_code":  4610.64,
+                                 "median_model_code":  5240.0,
+                                 "mode_model_code":  437
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "get_car_brands",
+                                         "duration_ms":  180,
+                                         "brand_count":  106
+                                     },
+                                     {
+                                         "step":  "search_car_price",
+                                         "duration_ms":  363,
+                                         "brand":  "Fiat",
+                                         "model_count":  583
+                                     },
+                                     {
+                                         "step":  "get_vehicles_by_type",
+                                         "duration_ms":  171,
+                                         "moto_brands":  100
+                                     }
+                                 ]
+               },
+    "duration_ms":  715
+}
+
+=== m7_ec2 ===
+{
+    "request_id":  "02aeda83-1c7d-45ed-bd73-e66f516a5cd8",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M7",
+                   "candle_count":  48,
+                   "eth_usdt_price":  1985.99,
+                   "stats":  {
+                                 "close_mean":  68506.68,
+                                 "close_median":  68806.1,
+                                 "close_sum":  3288320.6,
+                                 "volume_sum":  16216.0081
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "get_candlesticks",
+                                         "duration_ms":  230,
+                                         "candles":  48
+                                     },
+                                     {
+                                         "step":  "get_price_eth",
+                                         "duration_ms":  226,
+                                         "eth_usdt":  1985.99
+                                     }
+                                 ]
+               },
+    "duration_ms":  456
+}
+
+=== m8_ec2 ===
+{
+    "request_id":  "a66ce5d3-437d-414f-9cc5-c843eb3ee7fc",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M8",
+                   "source":  "Steam Store API (Game Trends API unavailable)",
+                   "top_seller_count":  10,
+                   "featured_count":  10,
+                   "price_sample_size":  20,
+                   "stats":  {
+                                 "mean_price_usd":  34.04,
+                                 "median_price_usd":  29.99,
+                                 "sum_prices_usd":  680.79,
+                                 "mode_price_usd":  40
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "get_steam_top_sellers",
+                                         "duration_ms":  120,
+                                         "count":  10
+                                     },
+                                     {
+                                         "step":  "get_steam_most_played",
+                                         "duration_ms":  141,
+                                         "count":  10
+                                     }
+                                 ]
+               },
+    "duration_ms":  261
+}
+
+=== m9_ec2 ===
+{
+    "request_id":  "281ab838-b98a-403b-b4b2-7ab19abdeb40",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M9",
+                   "package":  "nodejs",
+                   "search_results":  10,
+                   "nix_entries":  43,
+                   "version_entries":  43,
+                   "stats":  {
+                                 "mean":  22,
+                                 "median":  22,
+                                 "sum":  946
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "nixos_search",
+                                         "duration_ms":  532,
+                                         "results":  10
+                                     },
+                                     {
+                                         "step":  "nixos_info",
+                                         "duration_ms":  521,
+                                         "nix_entries":  43
+                                     },
+                                     {
+                                         "step":  "nixhub_package_versions",
+                                         "duration_ms":  72,
+                                         "versions":  43
+                                     }
+                                 ]
+               },
+    "duration_ms":  1125
+}
+
+=== m10_ec2 ===
+{
+    "request_id":  "1ea8fce6-c94d-42ce-a9e5-bcdc699986f0",
+    "status":  "success",
+    "result":  {
+                   "chain":  "M10",
+                   "title":  "Distributed computing",
+                   "section_count":  23,
+                   "article_char_count":  58373,
+                   "stats":  {
+                                 "mean_section_len":  31.57,
+                                 "median_section_len":  24,
+                                 "sum_section_len":  726
+                             },
+                   "chain_log":  [
+                                     {
+                                         "step":  "search_wikipedia",
+                                         "duration_ms":  331,
+                                         "title":  "Distributed computing"
+                                     },
+                                     {
+                                         "step":  "get_article",
+                                         "duration_ms":  118,
+                                         "char_count":  58373
+                                     },
+                                     {
+                                         "step":  "get_sections",
+                                         "duration_ms":  151,
+                                         "sections":  23
+                                     }
+                                 ]
+               },
+    "duration_ms":  600
+}
+
